@@ -128,7 +128,7 @@ public class Delivery {
     this.setPlacedAt(OffsetDateTime.now());
   }
 
-  public void pickUp() {
+  public void pickUp(UUID courierId) {
     this.setCourierId(courierId);
     this.changeStatusTo(DeliveryStatus.IN_TRANSIT);
     this.setAssignedAt(OffsetDateTime.now());
