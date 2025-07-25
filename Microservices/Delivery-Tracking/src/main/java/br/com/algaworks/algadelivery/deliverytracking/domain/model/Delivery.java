@@ -1,6 +1,14 @@
 package br.com.algaworks.algadelivery.deliverytracking.domain.model;
 
 import br.com.algaworks.algadelivery.deliverytracking.domain.exception.DomainException;
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -16,12 +24,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@Entity
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Setter(AccessLevel.PRIVATE)
 @Getter
 public class Delivery {
 
+  @Id
   @EqualsAndHashCode.Include
   private UUID id;
 
@@ -40,9 +50,28 @@ public class Delivery {
 
   private Integer totalItems;
 
+  @Embedded
+  @AttributeOverrides({
+      @AttributeOverride(name = "zipCode", column = @Column(name = "sender_zip_code")),
+      @AttributeOverride(name = "street", column = @Column(name = "sender_street")),
+      @AttributeOverride(name = "number", column = @Column(name = "sender_number")),
+      @AttributeOverride(name = "complement", column = @Column(name = "sender_complement")),
+      @AttributeOverride(name = "name", column = @Column(name = "sender_name")),
+      @AttributeOverride(name = "phone", column = @Column(name = "sender_phone"))
+  })
   private ContactPoint sender;
+  @Embedded
+  @AttributeOverrides({
+      @AttributeOverride(name = "zipCode", column = @Column(name = "recipient_zip_code")),
+      @AttributeOverride(name = "street", column = @Column(name = "recipient_street")),
+      @AttributeOverride(name = "number", column = @Column(name = "recipient_number")),
+      @AttributeOverride(name = "complement", column = @Column(name = "recipient_complement")),
+      @AttributeOverride(name = "name", column = @Column(name = "recipient_name")),
+      @AttributeOverride(name = "phone", column = @Column(name = "recipient_phone"))
+  })
   private ContactPoint recipient;
 
+  @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "delivery")
   private List<Item> items = new ArrayList<>();
 
   public static Delivery draft() {
@@ -59,7 +88,7 @@ public class Delivery {
   }
 
   public UUID addItem(String name, Integer quantity) {
-    Item item = Item.brandNew(name, quantity);
+    Item item = Item.brandNew(name, quantity, this);
     items.add(item);
     calculateTotalItems();
     return item.getId();
@@ -106,12 +135,12 @@ public class Delivery {
   }
 
   public void markAsDelivered() {
-    this.changeStatusTo(DeliveryStatus.DELIVERY);
+    this.changeStatusTo(DeliveryStatus.DELIVERED);
     this.setFulfilledAt(OffsetDateTime.now());
   }
 
   public void markAsFulfilled() {
-    this.changeStatusTo(DeliveryStatus.DELIVERY);
+    this.changeStatusTo(DeliveryStatus.DELIVERED);
     this.setFulfilledAt(OffsetDateTime.now());
   }
 
