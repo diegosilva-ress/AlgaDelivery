@@ -7,6 +7,7 @@ import br.com.algaworks.algadelivery.deliverytracking.domain.repository.Delivery
 import br.com.algaworks.algadelivery.deliverytracking.domain.service.DeliveryCheckpointService;
 import br.com.algaworks.algadelivery.deliverytracking.domain.service.DeliveryPreparationService;
 import jakarta.validation.Valid;
+import java.util.Random;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -44,7 +45,10 @@ public class DeliveryController {
   }
 
   @GetMapping
-  public PagedModel<Delivery> findAll(@PageableDefault Pageable pageable) {
+  public PagedModel<Delivery> findAll(@PageableDefault Pageable pageable)
+      throws InterruptedException {
+    int millis = new Random().nextInt(400);
+    Thread.sleep(millis);
     return new PagedModel<>(
         deliveryRepository.findAll(pageable));
   }
